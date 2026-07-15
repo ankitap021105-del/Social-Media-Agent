@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Social Media Agent — IBM Hackathon</title>
+  <meta name="description" content="AI-powered social media management dashboard with multi-platform support, caption generation, sentiment analysis, and analytics." />
+
+  <!-- Bootstrap 5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- App Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<!-- ════════════════════════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════════════════════ -->
+<div id="app-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <nav id="sidebar" aria-label="Main Navigation">
+    <a href="#" class="brand">
+      <div class="brand-icon"><i class="fas fa-robot"></i></div>
+      SocialAI&nbsp;Agent
+    </a>
+
+    <div class="nav-section-label">Core</div>
+    <a href="#" class="nav-link active" data-nav="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+    <a href="#" class="nav-link" data-nav="feed"><i class="fas fa-stream"></i> Social Feed</a>
+    <a href="#" class="nav-link" data-nav="generator"><i class="fas fa-magic"></i> AI Generator</a>
+    <a href="#" class="nav-link" data-nav="scheduler"><i class="fas fa-calendar-alt"></i> Scheduler</a>
+
+    <div class="nav-section-label">Intelligence</div>
+    <a href="#" class="nav-link" data-nav="trending"><i class="fas fa-fire"></i> Trending Hashtags</a>
+    <a href="#" class="nav-link" data-nav="timing"><i class="fas fa-clock"></i> Best Posting Times</a>
+    <a href="#" class="nav-link" data-nav="competitors"><i class="fas fa-chess-knight"></i> Competitor Analysis</a>
+
+    <div class="nav-section-label">Reports</div>
+    <a href="#" class="nav-link" data-nav="analytics"><i class="fas fa-chart-bar"></i> Analytics</a>
+
+    <div class="sidebar-footer">
+      <div style="display:flex;align-items:center;gap:8px">
+        <img src="https://ui-avatars.com/api/?name=My+Brand&background=3b82d4&color=fff&size=32" style="width:32px;height:32px;border-radius:50%" alt="avatar">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:var(--text-primary)">My Brand</div>
+          <div style="font-size:11px">Pro Plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div id="sidebar-overlay"></div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div id="main-content">
+
+    <!-- ── TOP BAR ── -->
+    <header id="topbar">
+      <button id="sidebar-toggle" aria-label="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+      <h1 class="page-title" id="page-title">Dashboard</h1>
+
+      <div class="topbar-actions">
+        <div class="search-bar" role="search">
+          <i class="fas fa-search"></i>
+          <input type="text" id="global-search" placeholder="Search posts, tags…" aria-label="Search">
+        </div>
+        <button class="icon-btn" id="btn-notifications" aria-label="Notifications" title="Notifications">
+          <i class="fas fa-bell"></i>
+        </button>
+        <button class="icon-btn" id="theme-toggle" aria-label="Toggle Dark Mode" title="Toggle Dark Mode">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── PAGE CONTENT ── -->
+    <main id="page-content">
+
+      <!-- ════════════════════════════════════════════
+           SECTION: DASHBOARD
+      ════════════════════════════════════════════ -->
+      <section id="section-dashboard" class="page-section active">
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+          <div class="stat-card" id="stat-followers"></div>
+          <div class="stat-card" id="stat-reach"></div>
+          <div class="stat-card" id="stat-posts"></div>
+          <div class="stat-card" id="stat-eng"></div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+          <!-- Left: Recent Posts -->
+          <div>
+            <div class="card mb-4">
+              <div class="card-header-custom">
+                <span><i class="fas fa-rss text-accent me-2"></i>Recent Posts</span>
+                <button class="btn-outline-custom btn-sm-custom" onclick="navigateTo('feed')">View All</button>
+              </div>
+              <div class="card-body-custom" id="dashboard-recent-posts" style="padding:12px 16px">
+                <div style="text-align:center;padding:30px;color:var(--text-muted)"><div class="ai-spinner"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Side Widgets -->
+          <div>
+            <!-- Weekly Reach Mini Chart -->
+            <div class="chart-card mb-3">
+              <div class="chart-title"><i class="fas fa-eye text-accent me-2"></i>Weekly Reach</div>
+              <div class="chart-container" style="height:120px"><canvas id="chart-mini-reach"></canvas></div>
+            </div>
+
+            <!-- Weekly Engagement Mini Chart -->
+            <div class="chart-card mb-3">
+              <div class="chart-title"><i class="fas fa-heart text-accent me-2"></i>Weekly Engagement</div>
+              <div class="chart-container" style="height:120px"><canvas id="chart-mini-eng"></canvas></div>
+            </div>
+
+            <!-- Sentiment Overview -->
+            <div class="card mb-3">
+              <div class="card-header-custom">
+                <span><i class="fas fa-smile text-accent me-2"></i>Sentiment Overview</span>
+              </div>
+              <div class="card-body-custom" id="sentiment-meter-bars"></div>
+            </div>
+
+            <!-- Top Stats Table -->
+            <div class="card">
+              <div class="card-header-custom"><i class="fas fa-trophy text-accent me-2"></i>Platform Summary</div>
+              <div class="card-body-custom" style="padding:0">
+                <table class="custom-table">
+                  <thead><tr><th>Platform</th><th>Share</th><th>Trend</th></tr></thead>
+                  <tbody>
+                    <tr><td><i class="fab fa-instagram" style="color:#e1306c"></i> Instagram</td><td>38%</td><td><span class="badge-success">↑ 5%</span></td></tr>
+                    <tr><td><i class="fab fa-x-twitter" style="color:#1da1f2"></i> X</td><td>24%</td><td><span class="badge-success">↑ 3%</span></td></tr>
+                    <tr><td><i class="fab fa-facebook-f" style="color:#1877f2"></i> Facebook</td><td>21%</td><td><span class="badge-warning">→ 0%</span></td></tr>
+                    <tr><td><i class="fab fa-linkedin-in" style="color:#0a66c2"></i> LinkedIn</td><td>17%</td><td><span class="badge-success">↑ 8%</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section><!-- /dashboard -->
+
+      <!-- ════════════════════════════════════════════
+           SECTION: SOCIAL FEED
+      ════════════════════════════════════════════ -->
+      <section id="section-feed" class="page-section">
+        <div class="feed-filters" role="group" aria-label="Platform filters">
+          <button class="filter-btn active" data-filter="all">🌐 All Platforms</button>
+          <button class="filter-btn ig" data-filter="instagram"><i class="fab fa-instagram"></i> Instagram</button>
+          <button class="filter-btn tw" data-filter="twitter"><i class="fab fa-x-twitter"></i> X (Twitter)</button>
+          <button class="filter-btn fb" data-filter="facebook"><i class="fab fa-facebook-f"></i> Facebook</button>
+          <button class="filter-btn li" data-filter="linkedin"><i class="fab fa-linkedin-in"></i> LinkedIn</button>
+        </div>
+        <div id="feed-container">
+          <div style="text-align:center;padding:48px;color:var(--text-muted)"><div class="ai-spinner"></div><br><br>Loading feed…</div>
+        </div>
+      </section><!-- /feed -->
+
+      <!-- ════════════════════════════════════════════
+           SECTION: AI GENERATOR
+      ════════════════════════════════════════════ -->
+      <section id="section-generator" class="page-section">
+        <div class="ai-grid">
+
+          <!-- Left: Caption Generator -->
+          <div>
+            <div class="ai-panel mb-4">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                <h5 style="font-weight:800;margin:0"><i class="fas fa-magic text-accent me-2"></i>AI Caption Generator</h5>
+                <span class="groq-badge"><i class="fas fa-bolt"></i> Powered by Groq LLaMA 3</span>
+              </div>
+
+              <div style="margin-bottom:14px">
+                <label class="form-label-custom">Topic / Product Name</label>
+                <input type="text" id="ai-topic" class="form-control-custom" placeholder="e.g., New AI design tool launch…" />
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                <div>
+                  <label class="form-label-custom">Caption Tone</label>
+                  <select id="ai-tone" class="form-select-custom">
+                    <option value="product">🚀 Product Launch</option>
+                    <option value="motivational">💪 Motivational</option>
+                    <option value="educational">📚 Educational</option>
+                    <option value="lifestyle">☀️ Lifestyle</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label-custom">Target Platform</label>
+                  <select id="ai-platform" class="form-select-custom">
+                    <option>Instagram</option>
+                    <option>X (Twitter)</option>
+                    <option>Facebook</option>
+                    <option>LinkedIn</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;margin-bottom:16px">
+                <button class="btn-primary-custom" id="btn-generate-caption" style="flex:1">
+                  <i class="fas fa-robot"></i> Generate Caption
+                </button>
+                <button class="btn-outline-custom" id="btn-copy-caption">
+                  <i class="fas fa-copy"></i> Copy
+                </button>
+              </div>
+
+              <label class="form-label-custom">Generated Caption</label>
+              <div class="ai-output-box" id="caption-output">Your AI-generated caption will appear here...</div>
+
+              <div style="margin-top:12px">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px"><i class="fas fa-clock"></i> Best posting time:</div>
+                <div id="time-suggestion" style="font-size:13px;font-weight:600;color:var(--accent)">—</div>
+              </div>
+            </div>
+
+            <!-- Text Sentiment Analyzer -->
+            <div class="ai-panel">
+              <h5 style="font-weight:800;margin-bottom:14px"><i class="fas fa-brain text-accent me-2"></i>Sentiment Analyzer</h5>
+              <label class="form-label-custom">Paste any text to analyze sentiment</label>
+              <textarea id="sentiment-input-text" class="form-control-custom" rows="3" placeholder="Type or paste your post text here…"></textarea>
+              <button class="btn-primary-custom mt-3 w-100" id="btn-analyze-sentiment">
+                <i class="fas fa-chart-pie"></i> Analyze Sentiment
+              </button>
+              <div id="sentiment-result" style="margin-top:14px"></div>
+            </div>
+          </div>
+
+          <!-- Right: Hashtag Generator + Image Upload -->
+          <div>
+            <!-- Hashtag Generator -->
+            <div class="ai-panel mb-4">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <h5 style="font-weight:800;margin:0"><i class="fas fa-hashtag text-accent me-2"></i>Hashtag Generator</h5>
+                <span class="groq-badge"><i class="fas fa-bolt"></i> AI-Powered</span>
+              </div>
+              <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Click chips to select hashtags for your post. Mix trending + niche for best reach.</p>
+              <button class="btn-primary-custom w-100 mb-3" id="btn-generate-hashtags">
+                <i class="fas fa-magic"></i> Generate Hashtags
+              </button>
+              <div id="hashtag-suggestions" style="min-height:60px;line-height:2.2">
+                <span style="font-size:13px;color:var(--text-muted)">Click "Generate Hashtags" to get started…</span>
+              </div>
+              <div id="selected-hashtags-preview" style="margin-top:10px;font-size:12px;color:var(--text-muted)"></div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="ai-panel mb-4">
+              <h5 style="font-weight:800;margin-bottom:14px"><i class="fas fa-image text-accent me-2"></i>Image Upload Preview</h5>
+              <div class="upload-zone" id="upload-dropzone">
+                <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                <div style="font-weight:700;margin-bottom:4px">Drag & drop image here</div>
+                <div style="font-size:12px;color:var(--text-muted)">or click to browse — JPG, PNG, GIF, WebP</div>
+                <input type="file" id="image-upload-input" accept="image/*" style="display:none">
+              </div>
+              <div id="upload-preview" class="upload-preview"></div>
+              <div style="margin-top:10px;font-size:13px;color:var(--text-muted)">
+                Image mood: <strong id="img-sentiment-result" style="color:var(--text-primary)">—</strong>
+              </div>
+            </div>
+
+            <!-- Quick Post Composer -->
+            <div class="ai-panel">
+              <h5 style="font-weight:800;margin-bottom:14px"><i class="fas fa-pen-nib text-accent me-2"></i>Quick Post Composer</h5>
+              <textarea id="quick-post-text" class="form-control-custom" rows="4" placeholder="Compose your post… or use the AI generator above to auto-fill."></textarea>
+              <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+                <button class="btn-primary-custom" onclick="composePost()"><i class="fas fa-paper-plane"></i> Publish Now</button>
+                <button class="btn-outline-custom" onclick="scheduleQuickPost()"><i class="fas fa-calendar"></i> Schedule</button>
+                <button class="btn-outline-custom" onclick="fillFromCaption()"><i class="fas fa-magic"></i> Use AI Caption</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section><!-- /generator -->
+
+      <!-- ════════════════════════════════════════════
+           SECTION: SCHEDULER
+      ════════════════════════════════════════════ -->
+      <section id="section-scheduler" class="page-section">
+        <div class="row g-4">
+          <div class="col-lg-5">
+            <div class="ai-panel">
+              <h5 style="font-weight:800;margin-bottom:16px"><i class="fas fa-calendar-plus text-accent me-2"></i>Schedule New Post</h5>
+              <form id="scheduler-form">
+                <div class="mb-3">
+                  <label class="form-label-custom">Platform</label>
+                  <select id="sched-platform" class="form-select-custom" required>
+                    <option value="">Choose platform…</option>
+                    <option>Instagram</option>
+                    <option>X (Twitter)</option>
+                    <option>Facebook</option>
+                    <option>LinkedIn</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Post Content</label>
+                  <textarea id="sched-content-input" class="form-control-custom" rows="4" placeholder="Write your post content…" required></textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label-custom">Schedule Date & Time</label>
+                  <input type="datetime-local" id="sched-datetime" class="form-control-custom" required />
+                </div>
+                <button type="submit" class="btn-primary-custom w-100">
+                  <i class="fas fa-calendar-check"></i> Schedule Post
+                </button>
+              </form>
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <div class="card">
+              <div class="card-header-custom">
+                <span><i class="fas fa-list text-accent me-2"></i>Scheduled Queue</span>
+                <span class="badge-accent" id="sched-count">4 posts</span>
+              </div>
+              <div class="card-body-custom" id="scheduled-posts-list"></div>
+            </div>
+          </div>
+        </div>
+      </section><!-- /scheduler -->
+
+      <!-- ════════════════════════════════════════════
+           SECTION: TRENDING HASHTAGS
+      ════════════════════════════════════════════ -->
+      <section id="section-trending" class="page-section">
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div class="card">
+              <div class="card-header-custom">
+                <span><i class="fas fa-fire text-accent me-2"></i>Trending Hashtags</span>
+                <span class="badge-danger"><i class="fas fa-circle" style="font-size:8px"></i> Live</span>
+              </div>
+              <div class="card-body-custom" id="trending-list"></div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="chart-card mb-3">
+              <div class="chart-title"><i class="fas fa-chart-pie text-accent me-2"></i>Platform Content Share</div>
+              <div class="chart-container" style="height:240px">
+                <canvas id="chart-platform-trending"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header-custom"><i class="fas fa-lightbulb text-accent me-2"></i>Hashtag Strategy Tips</div>
+              <div class="card-body-custom">
+                <ul style="font-size:13px;color:var(--text-muted);padding-left:18px;line-height:2">
+                  <li>Mix <strong>3-5 high-reach</strong> tags with <strong>5-7 niche</strong> tags</li>
+                  <li>Use <strong>trending</strong> 🔥 tags within <strong>24h</strong> of trending</li>
+                  <li>Avoid banned or overused hashtags</li>
+                  <li>Create a <strong>branded hashtag</strong> for community building</li>
+                  <li>Rotate hashtag sets to avoid shadowban</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section><!-- /trending -->
+
+      <!-- ════════════════════════════════════════════
+           SECTION: BEST POSTING TIMES
+      ════════════════════════════════════════════ -->
+      <section id="section-timing" class="page-section">
+        <div class="row g-4">
+          <div class="col-12">
+            <div class="card mb-4">
+              <div class="card-header-custom">
+                <span><i class="fas fa-clock text-accent me-2"></i>Best Posting Times by Platform</span>
+              </div>
+              <div class="card-body-custom">
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px">
+                  <button class="filter-btn active" data-timing-platform="Instagram"><i class="fab fa-instagram"></i> Instagram</button>
+                  <button class="filter-btn" data-timing-platform="X (Twitter)"><i class="fab fa-x-twitter"></i> X (Twitter)</button>
+                  <button class="filter-btn" data-timing-platform="Facebook"><i class="fab fa-facebook-f"></i> Facebook</button>
+                  <button class="filter-btn" data-timing-platform="LinkedIn"><i class="fab fa-linkedin-in"></i> LinkedIn</button>
+                </div>
+                <div id="timing-summary" style="margin-bottom:16px;padding:14px;background:var(--bg-secondary);border-radius:10px;border:1px solid var(--border-color)"></div>
+                <div class="time-grid" id="timing-grid"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Table -->
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header-custom"><i class="fas fa-table text-accent me-2"></i>Full Timing Reference Table</div>
+              <div class="card-body-custom" style="padding:0;overflow-x:auto">
+                <table class="custom-table">
+                  <thead>
+                    <tr><th>Platform</th><th>Best Day</th><th>Peak Time</th><th>Score</th><th>2nd Best Day</th><th>2nd Best Time</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><i class="fab fa-instagram" style="color:#e1306c"></i> Instagram</td>
+                      <td>Wednesday</td><td>7–9 PM</td>
+                      <td><span class="badge-success">92/100</span></td>
+                      <td>Thursday</td><td>7–9 PM</td>
+                    </tr>
+                    <tr>
+                      <td><i class="fab fa-x-twitter" style="color:#1da1f2"></i> X (Twitter)</td>
+                      <td>Wednesday</td><td>12–2 PM</td>
+                      <td><span class="badge-success">91/100</span></td>
+                      <td>Tuesday</td><td>8–10 AM</td>
+                    </tr>
+                    <tr>
+                      <td><i class="fab fa-facebook-f" style="color:#1877f2"></i> Facebook</td>
+                      <td>Wednesday</td><td>1–4 PM</td>
+                      <td><span class="badge-success">88/100</span></td>
+                      <td>Thursday</td><td>8–10 AM</td>
+                    </tr>
+                    <tr>
+                      <td><i class="fab fa-linkedin-in" style="color:#0a66c2"></i> LinkedIn</td>
+                      <td>Wednesday</td><td>10 AM–12 PM</td>
+                      <td><span class="badge-success">94/100</span></td>
+                      <td>Tuesday</td><td>10 AM–12 PM</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section><!-- /timing -->
+
+      <!-- ════════════════════════════════════════════
+           SECTION: COMPETITOR ANALYSIS
+      ════════════════════════════════════════════ -->
+      <section id="section-competitors" class="page-section">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div id="competitor-list"></div>
+          </div>
+          <div class="col-lg-4">
+            <div class="chart-card mb-3">
+              <div class="chart-title"><i class="fas fa-chart-bar text-accent me-2"></i>Competitor Comparison</div>
+              <div class="chart-container" style="height:260px"><canvas id="chart-competitor"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-header-custom"><i class="fas fa-star text-accent me-2"></i>Your Position</div>
+              <div class="card-body-custom">
+                <div style="display:grid;gap:10px">
+                  <div class="comp-stat">
+                    <div class="comp-stat-val" style="color:var(--accent)">128.4K</div>
+                    <div class="comp-stat-lbl">Your Followers</div>
+                  </div>
+                  <div class="comp-stat">
+                    <div class="comp-stat-val" style="color:var(--success)">4.7%</div>
+                    <div class="comp-stat-lbl">Your Avg Engagement</div>
+                  </div>
+                  <div class="comp-stat">
+                    <div class="comp-stat-val">12/wk</div>
+                    <div class="comp-stat-lbl">Your Post Frequency</div>
+                  </div>
+                </div>
+                <div style="margin-top:12px;padding:10px;background:rgba(34,197,94,.08);border-radius:8px;border:1px solid rgba(34,197,94,.2);font-size:13px">
+                  <i class="fas fa-check-circle" style="color:var(--success)"></i>
+                  <strong>Insight:</strong> Your engagement rate (4.7%) is above 2 out of 3 competitors. Focus on follower growth.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section><!-- /competitors -->
+
+      <!-- ════════════════════════════════════════════
+           SECTION: ANALYTICS
+      ════════════════════════════════════════════ -->
+      <section id="section-analytics" class="page-section">
+        <!-- Key Metrics Row -->
+        <div class="quick-stats mb-4">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#3b82d420;color:#3b82d4"><i class="fas fa-eye"></i></div>
+            <div class="stat-val">245.8K</div>
+            <div class="stat-lbl">Total Reach (7d)</div>
+            <div class="stat-delta up"><i class="fas fa-arrow-up"></i> +8.7% vs last week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#22c55e20;color:#22c55e"><i class="fas fa-heart"></i></div>
+            <div class="stat-val">11.2K</div>
+            <div class="stat-lbl">Total Engagements (7d)</div>
+            <div class="stat-delta up"><i class="fas fa-arrow-up"></i> +14.3%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#ec489920;color:#ec4899"><i class="fas fa-share-alt"></i></div>
+            <div class="stat-val">3,174</div>
+            <div class="stat-lbl">Total Shares (7d)</div>
+            <div class="stat-delta up"><i class="fas fa-arrow-up"></i> +22.1%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#f59e0b20;color:#f59e0b"><i class="fas fa-mouse-pointer"></i></div>
+            <div class="stat-val">1,842</div>
+            <div class="stat-lbl">Link Clicks (7d)</div>
+            <div class="stat-delta down"><i class="fas fa-arrow-down"></i> -3.2%</div>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-eye text-accent me-2"></i>Weekly Reach Trend</div>
+            <div class="chart-container" style="height:220px"><canvas id="chart-reach"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-bar text-accent me-2"></i>Daily Engagement</div>
+            <div class="chart-container" style="height:220px"><canvas id="chart-engagement"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-line text-accent me-2"></i>Follower Growth (12 Months)</div>
+            <div class="chart-container" style="height:220px"><canvas id="chart-growth"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie text-accent me-2"></i>Platform Share</div>
+            <div class="chart-container" style="height:220px"><canvas id="chart-platform"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-images text-accent me-2"></i>Post Type Performance</div>
+            <div class="chart-container" style="height:220px"><canvas id="chart-post-type"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-smile text-accent me-2"></i>Sentiment Distribution</div>
+            <div class="chart-container" style="height:220px"><canvas id="chart-sentiment"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Top Posts Table -->
+        <div class="card mt-4">
+          <div class="card-header-custom">
+            <span><i class="fas fa-trophy text-accent me-2"></i>Top Performing Posts</span>
+            <span class="text-muted-custom" style="font-size:12px">Last 7 days</span>
+          </div>
+          <div class="card-body-custom" style="padding:0;overflow-x:auto">
+            <table class="custom-table">
+              <thead>
+                <tr><th>#</th><th>Platform</th><th>Content Preview</th><th>Likes</th><th>Comments</th><th>Shares</th><th>Reach</th><th>Sentiment</th></tr>
+              </thead>
+              <tbody id="top-posts-table">
+                <!-- Populated by script -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section><!-- /analytics -->
+
+    </main><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<!-- Toast Container -->
+<div id="toast-container" aria-live="polite"></div>
+
+<!-- ── Scripts ── -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<script src="script.js"></script>
+
+<!-- Inline extras that need DOM references after load -->
+<script>
+/* ── Trending section mini chart init ── */
+function initTrendingChart() {
+  const ctx = document.getElementById("chart-platform-trending");
+  if (!ctx || window._trendPieInit) return;
+  window._trendPieInit = true;
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const tc = isDark ? "#e6edf3" : "#1f2328";
+  new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Instagram","X (Twitter)","Facebook","LinkedIn"],
+      datasets: [{ data: [38,24,21,17], backgroundColor: ["#e1306c","#1da1f2","#1877f2","#0a66c2"], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: "right", labels: { color: tc, padding: 10 } } }
+    }
+  });
+}
+
+/* ── Top Posts Table ── */
+function renderTopPostsTable() {
+  const tb = document.getElementById("top-posts-table");
+  if (!tb) return;
+  const sorted = [...MOCK_POSTS].sort((a,b) => (b.likes+b.comments+b.shares) - (a.likes+a.comments+a.shares));
+  tb.innerHTML = sorted.map((p,i) => `
+    <tr>
+      <td style="font-weight:700">${i+1}</td>
+      <td><span style="color:${platformColor(p.platform)}"><i class="${platformIcon(p.platform)}"></i> ${p.platform}</span></td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.content}">${p.content.slice(0,55)}…</td>
+      <td><strong>${formatNumber(p.likes)}</strong></td>
+      <td>${formatNumber(p.comments)}</td>
+      <td>${formatNumber(p.shares)}</td>
+      <td>${formatNumber(p.reach)}</td>
+      <td><span class="sentiment-badge ${p.sentiment}">${sentimentEmoji(p.sentiment)} ${capitalize(p.sentiment)}</span></td>
+    </tr>`).join("");
+}
+
+/* ── Quick compose helpers ── */
+function composePost() {
+  const txt = document.getElementById("quick-post-text")?.value?.trim();
+  if (!txt) return showToast("Write something first!", "error");
+  MOCK_POSTS.unshift({
+    id: Date.now(), platform: "Instagram", author: "@my_brand",
+    avatar: "https://ui-avatars.com/api/?name=My+Brand&background=3b82d4&color=fff&size=48",
+    content: txt, image: null,
+    likes: 0, comments: 0, shares: 0, time: "Just now",
+    sentiment: "positive", sentimentScore: 0.75,
+    hashtags: [], reach: 0
+  });
+  document.getElementById("quick-post-text").value = "";
+  showToast("Post published to feed!", "success");
+}
+
+function scheduleQuickPost() {
+  const txt = document.getElementById("quick-post-text")?.value?.trim();
+  if (!txt) return showToast("Write something first!", "error");
+  SCHEDULED_POSTS.unshift({ id: Date.now(), platform: "Instagram", content: txt.slice(0,60), scheduledFor: "Pending…", status: "draft" });
+  showToast("Post saved as draft!", "info");
+}
+
+function fillFromCaption() {
+  const cap = document.getElementById("caption-output")?.textContent;
+  const qp  = document.getElementById("quick-post-text");
+  if (!cap || cap.includes("appear here") || !qp) return showToast("Generate a caption first!", "error");
+  qp.value = cap;
+  showToast("Caption copied to composer!", "success");
+}
+
+/* ── Hook into navigateTo for deferred renders ── */
+const _origNavigate = navigateTo;
+navigateTo = function(page) {
+  _origNavigate(page);
+  if (page === "trending") { setTimeout(initTrendingChart, 100); }
+  if (page === "analytics") { setTimeout(renderTopPostsTable, 200); }
+};
+</script>
+</body>
+</html>
